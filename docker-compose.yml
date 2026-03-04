@@ -1,0 +1,119 @@
+services:
+  api-service:
+    build:
+      context: ./api-service
+      dockerfile: Dockerfile
+    container_name: api-service
+    image: davidakpele/api-service:latest
+    ports:
+      - "8292:8292"
+    environment:
+      PORT: 8292
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: notes_db
+      DB_USER: postgres
+      DB_PASSWORD: root
+      RATE_LIMIT_PER_MINUTE: 100
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - note-app-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: notes-postgres
+    environment:
+      POSTGRES_DB: notes_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notes_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - note-app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-gateway
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:uid=101,gid=101,mode=1777
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./security-firewalls/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./security-firewalls/conf.d:/etc/nginx/conf.d:ro
+      - ./security-firewalls/html:/usr/share/nginx/html:ro
+      - nginx_logs:/var/log/nginx:rw
+      - nginx_cache:/var/cache/nginx:rw
+      - nginx_run:/var/run:rw
+    depends_on:
+      - api-service
+      - frontend
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - TZ=UTC
+      - NGINX_ENTRYPOINT_QUIET_LOGS=1
+    networks:
+      - note-app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "service=nginx"
+
+  frontend:
+    build: ./frontend
+    container_name: note-app
+    ports:
+      - "3000:3000"
+    networks:
+      - note-app-network
+
+volumes:
+  postgres_data:
+  nginx_logs:
+    driver: local
+  nginx_cache:
+    driver: local
+  nginx_run:
+    driver: local
+
+networks:
+  note-app-network:
+    driver: bridge
