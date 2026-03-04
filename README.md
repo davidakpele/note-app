@@ -96,7 +96,52 @@ notes-api/
 ├── jest.config.json
 └── package.json
 ```
-
+## Architecture Without Nginx
+```
+HTTP Request
+     │
+     ▼
+┌──────────────────────┐
+│  requestLogger       │  src/middleware/requestLogger.js
+└──────────┬───────────┘
+           │
+     ▼
+┌──────────────────────┐
+│  Security & CORS     │  helmet, cors
+│  Rate Limiters       │  express-rate-limit (global + write)
+│  Body Parser         │  express.json({ limit: '10kb' })
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│  Router + Validator  │  src/routes/notes.js
+│  Sanitizer           │  src/middleware/sanitize.js
+│                      │  src/validators/noteValidator.js
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│  Controller          │  src/controllers/notesController.js
+│  HTTP in → HTTP out  │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│  Service             │  src/services/notesService.js
+│  Business logic      │
+│  Throws AppError     │
+└──────────┬───────────┘
+           │
+           ▼
+┌──────────────────────┐
+│  Repository          │  src/repositories/notesRepository.js
+│  Raw SQL only        │
+└──────────┬───────────┘
+           │
+           ▼
+      PostgreSQL
+    (connection pool)
+```
 ---
 
 ## Setup
