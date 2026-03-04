@@ -1,16 +1,11 @@
-/**
- * Integration tests — Notes API endpoints
- *
- * The service is mocked so tests cover the full HTTP pipeline
- * (routing → controller → response format → error handling)
- * without touching the database.
- */
 jest.mock('../../src/services/notesService');
 
 const request      = require('supertest');
-const app          = require('../../src/app');
+const createApp    = require('../../src/app');
 const notesService = require('../../src/services/notesService');
 const AppError     = require('../../src/utils/AppError');
+
+const app = createApp({ globalMax: 1000, writeMax: 1000 });
 
 const mockNote = {
   id:         'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
