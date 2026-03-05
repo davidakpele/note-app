@@ -1,7 +1,5 @@
 /**
  * Unit tests — NotesRepository
- *
- * The pg pool is mocked so no real database is needed.
  */
 jest.mock('../../src/db/pool');
 
@@ -18,7 +16,6 @@ const mockNote = {
 
 beforeEach(() => jest.clearAllMocks());
 
-// ── create ────────────────────────────────────────────────────────────────────
 describe('NotesRepository.create', () => {
   it('executes INSERT and returns the new row', async () => {
     pool.query.mockResolvedValueOnce({ rows: [mockNote] });
@@ -43,7 +40,6 @@ describe('NotesRepository.create', () => {
   });
 });
 
-// ── findAll ───────────────────────────────────────────────────────────────────
 describe('NotesRepository.findAll', () => {
   it('executes SELECT and returns all rows', async () => {
     pool.query.mockResolvedValueOnce({ rows: [mockNote, mockNote] });
@@ -63,7 +59,6 @@ describe('NotesRepository.findAll', () => {
   });
 });
 
-// ── findById ──────────────────────────────────────────────────────────────────
 describe('NotesRepository.findById', () => {
   it('returns the matched row', async () => {
     pool.query.mockResolvedValueOnce({ rows: [mockNote] });
@@ -82,7 +77,6 @@ describe('NotesRepository.findById', () => {
   });
 });
 
-// ── update ────────────────────────────────────────────────────────────────────
 describe('NotesRepository.update', () => {
   it('executes UPDATE and returns the updated row', async () => {
     const updated = { ...mockNote, title: 'Updated' };
@@ -105,7 +99,6 @@ describe('NotesRepository.update', () => {
   });
 });
 
-// ── delete ────────────────────────────────────────────────────────────────────
 describe('NotesRepository.delete', () => {
   it('returns true when a row was deleted', async () => {
     pool.query.mockResolvedValueOnce({ rowCount: 1 });
