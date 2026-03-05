@@ -37,13 +37,10 @@ const fireRequests = async (app, method, url, body, count) => {
 
 const lastOf = (arr) => arr[arr.length - 1];
 
-// ── Global rate limiter ───────────────────────────────────────────────────────
-
 describe('Global rate limiter', () => {
   let app;
 
   beforeEach(() => {
-    // Fresh app instance per test — resets the rate limit window
     app = createApp({ globalMax: 3, writeMax: 20 });
     jest.clearAllMocks();
   });
@@ -58,8 +55,6 @@ describe('Global rate limiter', () => {
 
   it('returns 429 after exceeding the global limit', async () => {
     notesService.getAllNotes.mockResolvedValue([]);
-
-    // 3 allowed + 1 over the limit = 4 total
     const responses = await fireRequests(app, 'get', '/api/notes', null, 4);
 
     expect(lastOf(responses).statusCode).toBe(429);
@@ -110,8 +105,6 @@ describe('Global rate limiter', () => {
     expect(res.headers['x-ratelimit-remaining']).toBeUndefined();
   });
 });
-
-// ── Write rate limiter ────────────────────────────────────────────────────────
 
 describe('Write rate limiter — POST /api/notes', () => {
   let app;
@@ -196,13 +189,10 @@ describe('Write rate limiter — DELETE /api/notes/:id', () => {
   });
 });
 
-// ── Read routes are NOT write-limited ────────────────────────────────────────
-
 describe('GET routes are not affected by write limiter', () => {
   let app;
 
   beforeEach(() => {
-    // write limit = 1, but GETs should sail through regardless
     app = createApp({ globalMax: 100, writeMax: 1 });
     jest.clearAllMocks();
   });
