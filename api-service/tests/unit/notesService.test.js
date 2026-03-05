@@ -1,7 +1,6 @@
 /**
  * Unit tests — NotesService
- *
- * The repository is mocked so the service is tested in isolation.
+
  */
 jest.mock('../../src/repositories/notesRepository');
 
@@ -18,8 +17,6 @@ const mockNote = {
 };
 
 beforeEach(() => jest.clearAllMocks());
-
-// ── createNote ────────────────────────────────────────────────────────────────
 describe('NotesService.createNote', () => {
   it('trims input and calls repository.create', async () => {
     notesRepository.create.mockResolvedValueOnce(mockNote);
@@ -48,7 +45,6 @@ describe('NotesService.createNote', () => {
   });
 });
 
-// ── getAllNotes ───────────────────────────────────────────────────────────────
 describe('NotesService.getAllNotes', () => {
   it('returns all notes from repository', async () => {
     notesRepository.findAll.mockResolvedValueOnce([mockNote]);
@@ -60,7 +56,6 @@ describe('NotesService.getAllNotes', () => {
   });
 });
 
-// ── getNoteById ───────────────────────────────────────────────────────────────
 describe('NotesService.getNoteById', () => {
   it('returns the note when found', async () => {
     notesRepository.findById.mockResolvedValueOnce(mockNote);
@@ -86,7 +81,6 @@ describe('NotesService.getNoteById', () => {
   });
 });
 
-// ── updateNote ────────────────────────────────────────────────────────────────
 describe('NotesService.updateNote', () => {
   it('fetches existing note then calls repository.update with trimmed values', async () => {
     notesRepository.findById.mockResolvedValueOnce(mockNote);
@@ -114,7 +108,6 @@ describe('NotesService.updateNote', () => {
   });
 });
 
-// ── deleteNote ────────────────────────────────────────────────────────────────
 describe('NotesService.deleteNote', () => {
   it('calls repository.delete and resolves when note exists', async () => {
     notesRepository.delete.mockResolvedValueOnce(true);
