@@ -20,11 +20,6 @@ const mockNote = {
   updated_at: new Date().toISOString(),
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-/**
- * Fire `count` requests sequentially and return all responses.
- */
 const fireRequests = async (app, method, url, body, count) => {
   const responses = [];
   for (let i = 0; i < count; i++) {
